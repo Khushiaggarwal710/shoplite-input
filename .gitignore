@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+instance/
+*.db
+*.db-journal
+.env
+.env.*
+!.env.example
+dist/
+build/
+.DS_Store
+Icon
+Icon?
