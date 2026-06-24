@@ -36,8 +36,9 @@ def list_orders():
 @orders_bp.get("/<int:order_id>")
 @login_required
 def get_order(order_id: int):
-    """Return one order."""
+    """Return one of your orders (admins can see any order)."""
     order = db.session.get(Order, order_id)
-    if order is None:
+    # 404, not 403, so other users can't tell which order IDs exist.
+    if order is None or (order.user_id != g.current_user.id and not g.current_user.is_admin):
         raise NotFound("order not found", code="SL-ORD-404")
     return order.to_dict()
