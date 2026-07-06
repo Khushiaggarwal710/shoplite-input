@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from shoplite.extensions import db
 from shoplite.models.product import Product
+from shoplite.models.user import User
 from shoplite.utils import clock
 from shoplite.utils.ids import order_number
 
@@ -29,13 +30,22 @@ class Order(db.Model):
         comment="pending_payment, paid, payment_failed, shipped or refunded.",
     )
     subtotal_paise: Mapped[int] = mapped_column(comment="Sum of line totals before discounts.")
-    total_paise: Mapped[int] = mapped_column(comment="Amount charged to the customer.")
+    discount_paise: Mapped[int] = mapped_column(default=0, comment="Total coupon discount.")
+    shipping_paise: Mapped[int] = mapped_column(default=0, comment="Shipping charge.")
+    total_paise: Mapped[int] = mapped_column(
+        comment="Amount charged: subtotal - discount + shipping."
+    )
+    shipping_pincode: Mapped[str | None] = mapped_column(
+        String(6), comment="6-digit Indian postal code of the delivery address."
+    )
     created_at: Mapped[datetime] = mapped_column(default=clock.utcnow, index=True)
     paid_at: Mapped[datetime | None]
 
     items: Mapped[list["OrderItem"]] = relationship(
         back_populates="order", cascade="all, delete-orphan", order_by="OrderItem.id"
     )
+    shipment: Mapped["Shipment | None"] = relationship(back_populates="order")  # noqa: F821
+    user: Mapped[User] = relationship()
 
     @property
     def number(self) -> str:
@@ -49,9 +59,13 @@ class Order(db.Model):
             "number": self.number,
             "status": self.status,
             "subtotal_paise": self.subtotal_paise,
+            "discount_paise": self.discount_paise,
+            "shipping_paise": self.shipping_paise,
             "total_paise": self.total_paise,
+            "shipping_pincode": self.shipping_pincode,
             "created_at": self.created_at.isoformat(),
             "items": [item.to_dict() for item in self.items],
+            "shipment": self.shipment.to_dict() if self.shipment else None,
         }
 
 
