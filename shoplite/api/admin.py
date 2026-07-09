@@ -4,9 +4,10 @@ from flask import Blueprint, request
 from sqlalchemy import select
 
 from shoplite.api.helpers import json_body, require_admin
-from shoplite.errors import ValidationError
+from shoplite.errors import NotFound, ValidationError
+from shoplite.extensions import db
 from shoplite.models import Order
-from shoplite.services import catalog, stock
+from shoplite.services import catalog, shipping, stock
 from shoplite.utils.money import to_paise
 from shoplite.utils.pagination import page_args, paginate
 from shoplite.utils.validation import get_bool, get_int, get_str
@@ -75,3 +76,13 @@ def list_all_orders():
     if request.args.get("status"):
         stmt = stmt.where(Order.status == request.args["status"])
     return paginate(stmt, page, per_page, lambda order: order.to_dict())
+
+
+@admin_bp.post("/orders/<int:order_id>/ship")
+def ship_order(order_id: int):
+    """Mark a paid order as shipped: {"carrier": "BlueDart"}."""
+    order = db.session.get(Order, order_id)
+    if order is None:
+        raise NotFound("order not found", code="SL-ORD-404")
+    shipment = shipping.ship_order(order, get_str(json_body(), "carrier", max_len=40))
+    return shipment.to_dict(), 201
