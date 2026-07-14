@@ -57,16 +57,11 @@ def set_quantity(user: User, sku: str, quantity: int) -> Cart:
 
 
 def clear_cart(cart: Cart) -> None:
-    """Empty the cart (the caller commits)."""
+    """Empty the cart and its coupons (the caller commits)."""
     cart.items.clear()
+    cart.coupons.clear()
 
 
-def cart_to_dict(cart: Cart) -> dict:
-    """JSON view of the cart with its subtotal."""
-    lines = [
-        {"sku": item.product.sku, "name": item.product.name, "quantity": item.quantity,
-         "unit_price_paise": item.product.price_paise,
-         "line_total_paise": item.product.price_paise * item.quantity}
-        for item in cart.items
-    ]
-    return {"items": lines, "subtotal_paise": sum(line["line_total_paise"] for line in lines)}
+def cart_subtotal(cart: Cart) -> int:
+    """Sum of price x quantity for every line, in paise."""
+    return sum(item.product.price_paise * item.quantity for item in cart.items)
