@@ -17,9 +17,10 @@ orders_bp = Blueprint("orders", __name__, url_prefix="/orders")
 @orders_bp.post("")
 @login_required
 def place_order():
-    """Check out the cart: {"payment_token": "tok_success"}."""
+    """Check out the cart: {"payment_token": "tok_success", "shipping_pincode": "560001"}."""
     body = json_body()
-    order = checkout(g.current_user, get_str(body, "payment_token"))
+    order = checkout(g.current_user, get_str(body, "payment_token"),
+                     get_str(body, "shipping_pincode", max_len=6))
     return order.to_dict(), 201
 
 

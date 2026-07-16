@@ -1,6 +1,6 @@
 """Money helpers. All amounts are integer paise (100 paise = 1 rupee); never floats."""
 
-from decimal import Decimal, InvalidOperation
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
 
 def to_paise(value: str | int) -> int:
@@ -25,3 +25,9 @@ def format_inr(paise: int) -> str:
     sign = "-" if paise < 0 else ""
     rupees, remainder = divmod(abs(paise), 100)
     return f"{sign}₹{rupees:,}.{remainder:02d}"
+
+
+def percent_of(amount_paise: int, percent: int) -> int:
+    """Return percent% of an amount, rounded half-up to the nearest paisa."""
+    share = Decimal(amount_paise) * Decimal(percent) / Decimal(100)
+    return int(share.quantize(Decimal(1), rounding=ROUND_HALF_UP))
