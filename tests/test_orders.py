@@ -1,5 +1,7 @@
 """Checkout and order history."""
 
+import pytest
+
 
 def stock_of(client, admin_headers, sku: str) -> int:
     """Read on-hand stock by adjusting by zero."""
@@ -14,7 +16,7 @@ def test_checkout_success(client, customer, product, buy, admin_headers):
     assert response.status_code == 201
     order = response.get_json()
     assert order["status"] == "paid"
-    assert order["total_paise"] == 50000
+    assert order["total_paise"] == 50000 + 4900  # flat shipping under ₹999
     assert order["number"].startswith("SL-")
     assert client.get("/cart", headers=headers).get_json()["items"] == []
     assert stock_of(client, admin_headers, sku) == 3
@@ -32,6 +34,16 @@ def test_checkout_requires_payment_token(client, customer, product):
     client.post("/cart/items", headers=headers, json={"sku": product(), "quantity": 1})
     assert client.post("/orders", headers=headers, json={}).status_code == 422
     assert client.post("/orders", headers=headers, json={"payment_token": 7}).status_code == 422
+
+
+@pytest.mark.parametrize("pincode", ["", "56000", "056001", "5600011", 560001])
+def test_checkout_rejects_bad_pincode(client, customer, product, pincode):
+    """shipping_pincode must be a 6-digit string not starting with 0."""
+    headers = customer()
+    client.post("/cart/items", headers=headers, json={"sku": product(), "quantity": 1})
+    response = client.post("/orders", headers=headers,
+                           json={"payment_token": "tok_success", "shipping_pincode": pincode})
+    assert response.status_code == 422
 
 
 def test_checkout_out_of_stock_is_409(client, customer, product, buy):
@@ -67,6 +79,14 @@ def test_order_history_is_own_orders_only(client, customer, product, buy):
     buy(first, {sku: 1})
     buy(second, {sku: 1})
     assert client.get("/orders", headers=first).get_json()["total"] == 1
+
+
+def test_other_users_order_is_404(client, customer, product, buy, admin_headers):
+    """You can't read someone else's order; admins can."""
+    owner, other = customer(), customer()
+    order_id = buy(owner, {product(): 1}).get_json()["id"]
+    assert client.get(f"/orders/{order_id}", headers=other).status_code == 404
+    assert client.get(f"/orders/{order_id}", headers=admin_headers).status_code == 200
 
 
 def test_unknown_order_is_404(client, customer):

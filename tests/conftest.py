@@ -116,12 +116,31 @@ def product(client, admin_headers):
 def buy(client):
     """Return a function that fills a cart and checks out."""
 
-    def checkout(headers: dict, items: dict, payment_token: str = "tok_success"):
-        """Add {sku: quantity} to the cart and place the order; returns the response."""
+    def checkout(headers: dict, items: dict, payment_token: str = "tok_success",
+                 coupon: str | None = None):
+        """Add {sku: quantity} (and a coupon) to the cart and place the order."""
         for sku, quantity in items.items():
             response = client.post("/cart/items", headers=headers,
                                    json={"sku": sku, "quantity": quantity})
             assert response.status_code == 201, response.get_json()
-        return client.post("/orders", headers=headers, json={"payment_token": payment_token})
+        if coupon:
+            response = client.post("/cart/coupons", headers=headers, json={"code": coupon})
+            assert response.status_code == 201, response.get_json()
+        return client.post("/orders", headers=headers,
+                           json={"payment_token": payment_token, "shipping_pincode": "560001"})
 
     return checkout
+
+
+@pytest.fixture
+def coupon(client, admin_headers):
+    """Return a function that creates a coupon through the admin API."""
+
+    def make_coupon(code: str, kind: str = "percent", value: int = 10, **extra) -> str:
+        """Create a coupon and return its code."""
+        response = client.post("/coupons", headers=admin_headers,
+                               json={"code": code, "kind": kind, "value": value, **extra})
+        assert response.status_code == 201, response.get_json()
+        return code
+
+    return make_coupon
