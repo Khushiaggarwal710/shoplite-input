@@ -1,6 +1,6 @@
 [project]
 name = "shoplite"
-version = "1.0.0"
+version = "1.1.0"
 description = "ShopLite: a small online-shop JSON API used as the practice codebase in the Applied AI Engineering Bootcamp."
 readme = "README.md"
 license = "LicenseRef-Course-Owned"

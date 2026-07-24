@@ -18,9 +18,10 @@ uv run pytest                # run the tests
 | Folder | What it holds |
 |---|---|
 | `shoplite/models/` | Database tables (SQLAlchemy) |
-| `shoplite/services/` | Business rules: checkout, stock, cart, auth |
+| `shoplite/services/` | Business rules: checkout, pricing, coupons, stock, shipping, refunds |
 | `shoplite/api/` | HTTP endpoints (Flask blueprints) |
 | `shoplite/payments/` | A fake payment gateway (no network) |
+| `shoplite/notifications/` | Email stub (logs instead of sending) |
 | `shoplite/utils/` | Money, validation, pagination, IDs |
 | `migrations/` | Alembic schema migrations |
 | `tests/` | pytest suite; every test goes through the HTTP client |
