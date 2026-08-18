@@ -21,7 +21,7 @@ def refund_order(order: Order) -> Order:
     gateway.refund(payment.gateway_ref, payment.amount_paise)
     payment.status = PAYMENT_REFUNDED
     for item in order.items:
-        stock.take_stock(item.product_id, -item.quantity)
+        stock.return_to_stock(item.product_id, item.quantity)
     order.status = STATUS_REFUNDED
     db.session.commit()
     send_email(order.user.email, f"Refund for order {order.number}",

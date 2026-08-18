@@ -3,6 +3,7 @@
 from flask import Blueprint, request
 from sqlalchemy import select
 
+from shoplite import warehouse_client
 from shoplite.api.helpers import json_body, require_admin
 from shoplite.errors import NotFound, ValidationError
 from shoplite.extensions import db
@@ -65,7 +66,26 @@ def adjust_inventory(sku: str):
     body = json_body()
     product = catalog.get_product(sku, include_inactive=True)
     item = stock.adjust_stock(product.id, get_int(body, "change"))
-    return {"sku": sku, "on_hand": item.on_hand}
+    return {"sku": sku, "on_hand": item.on_hand, "reserved": item.reserved}
+
+
+@admin_bp.get("/inventory/<sku>")
+def inventory_status(sku: str):
+    """Show ShopLite's stock next to the warehouse's count for one SKU."""
+    product = catalog.get_product(sku, include_inactive=True)
+    item = stock.get_inventory(product.id)
+    try:
+        warehouse_on_hand = warehouse_client.fetch_stock_level(sku)
+    except warehouse_client.WarehouseUnavailable:
+        warehouse_on_hand = None
+    return {"sku": sku, "on_hand": item.on_hand, "reserved": item.reserved,
+            "sellable": item.on_hand - item.reserved, "warehouse_on_hand": warehouse_on_hand}
+
+
+@admin_bp.post("/stock/release-expired")
+def release_expired_holds():
+    """Release stock holds whose 15-minute window has passed."""
+    return {"released": stock.release_stale_reservations()}
 
 
 @admin_bp.get("/orders")

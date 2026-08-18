@@ -3,7 +3,7 @@
 from shoplite.models.cart import Cart, CartCoupon, CartItem
 from shoplite.models.category import Category
 from shoplite.models.coupon import Coupon, CouponRedemption
-from shoplite.models.inventory import InventoryItem
+from shoplite.models.inventory import InventoryItem, ReservationEntry
 from shoplite.models.order import Order, OrderItem
 from shoplite.models.payment import Payment
 from shoplite.models.product import Product
@@ -24,6 +24,7 @@ __all__ = [
     "OrderItem",
     "Payment",
     "Product",
+    "ReservationEntry",
     "Review",
     "Shipment",
     "User",
