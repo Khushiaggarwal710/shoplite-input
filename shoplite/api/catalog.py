@@ -2,6 +2,7 @@
 
 from flask import Blueprint, request
 
+from shoplite import faults
 from shoplite.services import catalog
 from shoplite.utils.pagination import page_args, paginate
 
@@ -12,6 +13,7 @@ catalog_bp = Blueprint("catalog", __name__)
 def list_products():
     """List active products; filter with ?category= and ?q=."""
     page, per_page = page_args(request.args)
+    faults.maybe_slow_query()
     stmt = catalog.product_query(request.args.get("category"), request.args.get("q"))
     return paginate(stmt, page, per_page, lambda product: product.to_dict())
 
