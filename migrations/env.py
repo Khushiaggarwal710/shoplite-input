@@ -9,29 +9,19 @@ from alembic import context
 # access to the values within the .ini file in use.
 config = context.config
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-fileConfig(config.config_file_name)
+# Set up Alembic's loggers without silencing the app's own loggers.
+fileConfig(config.config_file_name, disable_existing_loggers=False)
 logger = logging.getLogger('alembic.env')
 
 
 def get_engine():
     """Return the app's SQLAlchemy engine."""
-    try:
-        # this works with Flask-SQLAlchemy<3 and Alchemical
-        return current_app.extensions['migrate'].db.get_engine()
-    except (TypeError, AttributeError):
-        # this works with Flask-SQLAlchemy>=3
-        return current_app.extensions['migrate'].db.engine
+    return current_app.extensions['migrate'].db.engine
 
 
 def get_engine_url():
     """Return the database URL as a string."""
-    try:
-        return get_engine().url.render_as_string(hide_password=False).replace(
-            '%', '%%')
-    except AttributeError:
-        return str(get_engine().url).replace('%', '%%')
+    return get_engine().url.render_as_string(hide_password=False).replace('%', '%%')
 
 
 # add your model's MetaData object here
