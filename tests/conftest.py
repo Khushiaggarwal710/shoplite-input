@@ -5,8 +5,10 @@ framework means rewriting this file, not the tests.
 """
 
 import itertools
+from types import SimpleNamespace
 
 import pytest
+from flask_migrate import upgrade
 
 from shoplite import create_app
 from shoplite.extensions import db
@@ -43,12 +45,41 @@ def app_factory():
 
 
 @pytest.fixture
+def shop_with(app_factory):
+    """Return a function that builds a shop with config overrides, a customer and one product."""
+
+    def make_shop(**overrides) -> SimpleNamespace:
+        """Build the shop; returns client, admin_headers, customer_headers and sku."""
+        client = app_factory(**overrides)
+        admin_headers = login_headers(client, "admin@shoplite.test")
+        client.post("/admin/products", headers=admin_headers, json={
+            "sku": "FLT-0001", "name": "Fault drill product", "price": "100.00",
+            "category": "Drills", "stock": 5})
+        client.post("/auth/register", json={
+            "email": "drill@shoplite.test", "name": "Drill", "password": PASSWORD})
+        return SimpleNamespace(client=client, admin_headers=admin_headers, sku="FLT-0001",
+                               customer_headers=login_headers(client, "drill@shoplite.test"))
+
+    return make_shop
+
+
+@pytest.fixture
 def client():
     """HTTP test client on an empty shop (one admin user)."""
     app = build_app()
     yield app.test_client()
     with app.app_context():
         db.session.remove()
+
+
+@pytest.fixture
+def migrated_db(tmp_path):
+    """Build a file database with `flask db upgrade` and return its path."""
+    path = tmp_path / "migrated.db"
+    app = create_app({**TEST_CONFIG, "SQLALCHEMY_DATABASE_URI": f"sqlite:///{path}"})
+    with app.app_context():
+        upgrade()
+    return path
 
 
 @pytest.fixture(autouse=True)
