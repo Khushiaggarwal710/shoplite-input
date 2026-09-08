@@ -1,0 +1,51 @@
+sku,name,category,price,stock,description
+KIT-0001,Steel Pressure Cooker 5L,Kitchen,2499.00,40,"Stainless steel, induction base, five-litre capacity."
+KIT-0002,Non-stick Tawa 28cm,Kitchen,899.00,60,Granite-finish non-stick griddle for rotis and dosas.
+KIT-0003,Cast Iron Kadai 2L,Kitchen,1399.00,35,Pre-seasoned cast iron wok with two handles.
+KIT-0004,Glass Storage Jars (Set of 6),Kitchen,749.00,80,Airtight borosilicate jars with bamboo lids.
+KIT-0005,Masala Dabba with 7 Bowls,Kitchen,599.00,70,Stainless steel spice box with a see-through lid.
+KIT-0006,Electric Kettle 1.5L,Kitchen,1199.00,50,Auto shut-off kettle with a concealed element.
+KIT-0007,Chef's Knife 20cm,Kitchen,1899.00,30,High-carbon steel blade with a riveted handle.
+KIT-0008,Copper Water Bottle 1L,Kitchen,999.00,90,Leak-proof hammered copper bottle.
+KIT-0009,Silicone Spatula Set,Kitchen,349.00,120,Three heat-resistant spatulas.
+HOM-0001,Cotton Bedsheet Queen,Home Decor,1299.00,55,"Percale weave, 300 thread count, two pillow covers."
+HOM-0002,Handloom Cushion Covers (Set of 5),Home Decor,899.00,65,Hand-woven covers in earthy tones.
+HOM-0003,Brass Diya Pair,Home Decor,649.00,100,Traditional oil lamps in polished brass.
+HOM-0004,Jute Area Rug 4x6,Home Decor,2199.00,25,Braided natural jute rug.
+HOM-0005,Ceramic Planter Medium,Home Decor,549.00,75,Glazed planter with a drainage hole.
+HOM-0006,Blackout Curtains (Pair),Home Decor,1799.00,40,Thermal-lined curtains for a 7 ft door.
+HOM-0007,Wall Clock Wooden 12in,Home Decor,999.00,45,Silent sweep movement on a sheesham frame.
+HOM-0008,Scented Candle Trio,Home Decor,799.00,85,"Sandalwood, jasmine and vetiver soy candles."
+ELC-0001,USB-C Charger 33W,Electronics Accessories,1099.00,120,Fast charger with a 1 m cable.
+ELC-0002,Power Bank 20000mAh,Electronics Accessories,1999.00,70,Dual-output power bank with PD support.
+ELC-0003,Wireless Mouse,Electronics Accessories,699.00,110,Silent clicks and a 12-month battery.
+ELC-0004,Mechanical Keyboard TKL,Electronics Accessories,3499.00,30,Tenkeyless keyboard with hot-swap switches.
+ELC-0005,Laptop Stand Aluminium,Electronics Accessories,1499.00,45,Adjustable stand for 11 to 17 inch laptops.
+ELC-0006,Bluetooth Earbuds,Electronics Accessories,2499.00,60,Earbuds with ANC and a 30-hour case.
+ELC-0007,HDMI Cable 2m,Electronics Accessories,399.00,150,4K60 braided HDMI cable.
+ELC-0008,Webcam 1080p,Electronics Accessories,2299.00,35,Full-HD webcam with a privacy shutter.
+ELC-0009,Surge Protector 6 Socket,Electronics Accessories,1299.00,50,Six universal sockets and two USB ports.
+STA-0001,A5 Dotted Notebook,Stationery,299.00,200,"160 pages, 100 gsm paper, lay-flat binding."
+STA-0002,Gel Pen Pack of 10,Stationery,199.00,250,Smooth 0.5 mm gel pens in black and blue.
+STA-0003,Desk Organiser Bamboo,Stationery,899.00,60,Five compartments for pens and notes.
+STA-0004,Sticky Notes Mega Pack,Stationery,249.00,180,Twelve pads in pastel colours.
+STA-0005,Fountain Pen Starter,Stationery,1199.00,40,Steel nib fountain pen with a converter.
+STA-0006,Highlighter Set of 6,Stationery,179.00,220,Chisel-tip highlighters.
+STA-0007,Weekly Planner Undated,Stationery,449.00,90,52-week undated planner.
+STA-0008,Drawing Pencils Set,Stationery,349.00,100,Twelve graphite pencils from 6H to 8B.
+FIT-0001,Yoga Mat 6mm,Fitness,999.00,80,Non-slip TPE mat with a carry strap.
+FIT-0002,Adjustable Dumbbells 10kg Pair,Fitness,3999.00,20,Spin-lock dumbbells with plates.
+FIT-0003,Resistance Bands Set,Fitness,699.00,95,Five bands from light to extra heavy.
+FIT-0004,Skipping Rope Ball Bearing,Fitness,349.00,130,Adjustable speed rope.
+FIT-0005,Foam Roller 45cm,Fitness,899.00,50,High-density roller for recovery.
+FIT-0006,Steel Gym Bottle 750ml,Fitness,599.00,110,Insulated bottle that stays cold for 24 hours.
+FIT-0007,Ab Roller Wheel,Fitness,499.00,60,Dual wheel with a knee pad.
+FIT-0008,Fitness Tracker Band,Fitness,2799.00,40,Heart-rate and sleep tracking band.
+TOY-0001,Wooden Building Blocks 100pc,Toys,1299.00,45,Natural wood blocks in a cotton bag.
+TOY-0002,Jigsaw Puzzle 500pc India Map,Toys,599.00,70,Illustrated map puzzle.
+TOY-0003,Remote Control Car,Toys,1899.00,30,Rechargeable 1:18 off-road car.
+TOY-0004,Board Game Ludo Deluxe,Toys,499.00,90,Wooden Ludo board with tokens.
+TOY-0005,Kids Art Kit,Toys,899.00,55,"Crayons, paints and sketch pads in a case."
+TOY-0006,Rubik's-style Speed Cube,Toys,349.00,120,Smooth 3x3 puzzle cube.
+TOY-0007,Plush Elephant 30cm,Toys,749.00,65,Soft toy safe for ages 3 and up.
+TOY-0008,Science Experiment Kit,Toys,1499.00,35,Twenty guided experiments for ages 8 and up.
