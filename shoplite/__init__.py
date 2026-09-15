@@ -10,7 +10,7 @@ from shoplite.config import load_config
 from shoplite.errors import register_error_handlers
 from shoplite.extensions import db, migrate
 
-__version__ = "1.1.0"
+__version__ = "2.0.0"
 
 
 def create_app(overrides: dict | None = None) -> Flask:

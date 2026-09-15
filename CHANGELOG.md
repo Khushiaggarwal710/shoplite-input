@@ -3,6 +3,22 @@
 All notable changes to ShopLite are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [2.0.0] - 2026-09-15
+
+### Added
+- Stock holds: checkout reserves stock in `inv_reservation_ledger` before charging, so sellable stock is `on_hand - reserved`. Holds from failed payments expire after 15 minutes.
+- Admin reports: sales summary, top products and low stock (`/reports/...`).
+- Structured JSON logs with a request ID on every request (`X-Request-ID`).
+- `/healthz` and a Prometheus `/metrics` endpoint.
+- Fault switches for incident drills (`SHOPLITE_FAULT_*`), off by default.
+- Stock sync to the shoplite-warehouse service, with a fake mode.
+- Dockerfile (gunicorn), deterministic seed data and reporting views.
+
+### Changed
+- **Breaking:** stock adjustments can no longer go below the units held for orders.
+- `POST /admin/inventory/<sku>` also returns `reserved`.
+- Refunds return items to stock through the stock service.
+
 ## [1.1.0] - 2026-07-24
 
 ### Added
