@@ -12,7 +12,7 @@ from shoplite.services.cart import cart_subtotal, get_cart
 from shoplite.utils import clock
 from shoplite.utils.money import percent_of
 
-MAX_COUPONS_PER_ORDER = 1
+MAX_COUPONS_PER_ORDER = 2  # at most one percent and one flat coupon
 
 
 def get_coupon(code: str) -> Coupon:
@@ -51,14 +51,19 @@ def coupon_discount(coupon: Coupon, amount_paise: int) -> int:
     return min(coupon.value, amount_paise)
 
 
+def kind_already_applied(cart: Cart, kind: str) -> bool:
+    return any(applied.coupon.kind == kind for applied in cart.coupons)
+
+
 def apply_coupon(user: User, code: str) -> Cart:
     """Attach a coupon to the user's cart after checking it."""
     cart = get_cart(user)
     coupon = get_coupon(code)
     if any(applied.coupon_id == coupon.id for applied in cart.coupons):
         raise Conflict(f"{coupon.code} is already applied", code="SL-CPN-409")
-    if len(cart.coupons) >= MAX_COUPONS_PER_ORDER:
-        raise Conflict("only one coupon can be used per order", code="SL-CPN-409")
+    if len(cart.coupons) >= MAX_COUPONS_PER_ORDER or kind_already_applied(cart, coupon.kind):
+        raise Conflict("an order can use one percent coupon and one flat coupon",
+                       code="SL-CPN-409")
     check_redeemable(coupon, cart_subtotal(cart), clock.utcnow())
     cart.coupons.append(CartCoupon(coupon_id=coupon.id, coupon=coupon))
     db.session.commit()
