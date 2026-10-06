@@ -32,6 +32,7 @@ def quote_cart(cart: Cart, pincode: str | None = None) -> PriceQuote:
 # Percent coupons apply to the full subtotal first; flat coupons then come off
 # what is left. The order the customer applied them in doesn't matter.
 def stack_discounts(applied: list[CartCoupon], subtotal_paise: int) -> list[tuple[Coupon, int]]:
+    """Apply percent coupons first, then flat ones to what is left."""
     ordered = sorted(applied, key=lambda a: 0 if a.coupon.kind == KIND_PERCENT else 1)
     remaining = subtotal_paise
     discounts = []

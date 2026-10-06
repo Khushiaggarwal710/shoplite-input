@@ -52,6 +52,7 @@ def coupon_discount(coupon: Coupon, amount_paise: int) -> int:
 
 
 def kind_already_applied(cart: Cart, kind: str) -> bool:
+    """True if the cart already has a coupon of this kind."""
     return any(applied.coupon.kind == kind for applied in cart.coupons)
 
 
