@@ -21,8 +21,8 @@ def test_flat_coupon_never_exceeds_subtotal(client, customer, product, coupon):
     assert cart["total_paise"] == 4900  # shipping only
 
 
-def test_only_one_coupon_per_order(client, customer, product, coupon):
-    """A second coupon is rejected with SL-CPN-409."""
+def test_two_coupons_of_the_same_kind_rejected(client, customer, product, coupon):
+    """A second percent coupon is rejected with SL-CPN-409."""
     headers = customer()
     client.post("/cart/items", headers=headers, json={"sku": product(), "quantity": 1})
     client.post("/cart/coupons", headers=headers, json={"code": coupon("FIRST")})
@@ -92,3 +92,39 @@ def test_create_coupon_validation(client, admin_headers, customer):
     forbidden = client.post("/coupons", headers=customer(),
                             json={"code": "X3", "kind": "flat", "value": 100})
     assert forbidden.status_code == 403
+
+
+def test_percent_and_flat_coupons_stack(client, customer, product, coupon, buy):
+    """10% off ₹2,000 is ₹200, then ₹100 flat comes off the remaining ₹1,800."""
+    headers, sku = customer(), product(price="1000.00")
+    flat, percent = coupon("HUNDRED", kind="flat", value=10000), coupon("TEN", value=10)
+    client.post("/cart/items", headers=headers, json={"sku": sku, "quantity": 2})
+    client.post("/cart/coupons", headers=headers, json={"code": flat})
+    cart = client.post("/cart/coupons", headers=headers, json={"code": percent}).get_json()
+    assert cart["coupons"] == ["TEN", "HUNDRED"]
+    assert cart["discount_paise"] == 20000 + 10000
+    assert cart["total_paise"] == 200000 - 30000  # still over ₹999, so free shipping
+
+
+def test_stacked_discount_never_exceeds_subtotal(client, customer, product, coupon):
+    """A big flat coupon after a percent coupon only takes what is left."""
+    headers, sku = customer(), product(price="100.00")
+    client.post("/cart/items", headers=headers, json={"sku": sku, "quantity": 1})
+    client.post("/cart/coupons", headers=headers, json={"code": coupon("HALF", value=50)})
+    cart = client.post("/cart/coupons", headers=headers,
+                       json={"code": coupon("HUGE", kind="flat", value=900000)}).get_json()
+    assert cart["discount_paise"] == 10000
+
+
+def test_stacked_order_logs_both_redemptions(client, customer, product, coupon, buy,
+                                            admin_headers):
+    """Both coupons count as used, so a one-use flat coupon is then used up."""
+    flat = coupon("ONCEFLAT", kind="flat", value=5000, max_redemptions=1)
+    headers, sku = customer(), product(price="1000.00")
+    client.post("/cart/items", headers=headers, json={"sku": sku, "quantity": 1})
+    client.post("/cart/coupons", headers=headers, json={"code": coupon("FIVEPC", value=5)})
+    assert buy(headers, {}, coupon=flat).status_code == 201
+    other = customer()
+    client.post("/cart/items", headers=other, json={"sku": sku, "quantity": 1})
+    response = client.post("/cart/coupons", headers=other, json={"code": flat})
+    assert response.get_json()["error"]["code"] == "SL-CPN-422"

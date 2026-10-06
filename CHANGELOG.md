@@ -3,6 +3,11 @@
 All notable changes to ShopLite are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Orders can use two coupons: one percent and one flat. Percent coupons apply first.
+
 ## [2.0.0] - 2026-09-15
 
 ### Added
