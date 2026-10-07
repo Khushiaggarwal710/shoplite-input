@@ -5,7 +5,7 @@ Checkout holds stock while the card is charged; failed-payment holds expire afte
 
 from datetime import timedelta
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from shoplite import faults, warehouse_client
 from shoplite.errors import OutOfStock, ValidationError
@@ -38,17 +38,24 @@ def sync_to_warehouse(product_id: int) -> None:
     warehouse_client.push_stock_level(product.sku, get_inventory(product_id).on_hand)
 
 
-# Reads the available count, then writes the new reserved count. Two checkouts
-# running at the same moment can both pass the check for the last unit.
+# The check and the write happen in one UPDATE, so the database decides who
+# gets the last unit when two checkouts arrive at the same moment.
+def try_reserve(product_id: int, quantity: int) -> bool:
+    result = db.session.execute(
+        update(InventoryItem)
+        .where(InventoryItem.product_id == product_id,
+               InventoryItem.on_hand - InventoryItem.reserved >= quantity)
+        .values(reserved=InventoryItem.reserved + quantity))
+    return result.rowcount == 1
+
+
 def reserve_for_order(order: Order) -> None:
     """Hold stock for every line of an order, or raise OutOfStock."""
     expires_at = clock.utcnow() + RESERVATION_TTL
     for line in order.items:
-        item = get_inventory(line.product_id)
-        if item.on_hand - item.reserved < line.quantity:
-            raise OutOfStock(f"only {item.on_hand - item.reserved} left of {line.product.sku}",
-                             details={"sku": line.product.sku})
-        item.reserved += line.quantity
+        if not try_reserve(line.product_id, line.quantity):
+            raise OutOfStock(f"only {available_units(line.product_id)} left of "
+                             f"{line.product.sku}", details={"sku": line.product.sku})
         db.session.add(ReservationEntry(product_id=line.product_id, order_id=order.id,
                                         quantity=line.quantity, expires_at=expires_at))
 
@@ -74,6 +81,13 @@ def release_entry(entry: ReservationEntry) -> None:
     """Give one hold back to sellable stock."""
     get_inventory(entry.product_id).reserved -= entry.quantity
     entry.status = RESERVATION_RELEASED
+
+
+def release_order_holds(order: Order) -> None:
+    if faults.reservation_leak_enabled():
+        return
+    for entry in held_entries(order.id):
+        release_entry(entry)
 
 
 def release_stale_reservations() -> int:

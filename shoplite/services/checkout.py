@@ -32,6 +32,7 @@ def create_order(user: User, cart: Cart, shipping_pincode: str) -> tuple[Order, 
 
 def record_failed_payment(order: Order, status: str, error_code: str, outcome: str) -> None:
     """Mark the order failed and save the payment attempt."""
+    stock.release_order_holds(order)
     order.status = STATUS_PAYMENT_FAILED
     db.session.add(Payment(order_id=order.id, amount_paise=order.total_paise,
                            status=status, error_code=error_code))
@@ -62,7 +63,6 @@ def checkout(user: User, payment_token: str, shipping_pincode: str) -> Order:
         raise
     db.session.commit()
 
-    # Failed payments keep their holds until they expire (see stock.RESERVATION_TTL).
     try:
         if faults.gateway_should_fail():
             raise gateway.GatewayUnavailable("fault switch: gateway errors")
