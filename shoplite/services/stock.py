@@ -41,6 +41,7 @@ def sync_to_warehouse(product_id: int) -> None:
 # The check and the write happen in one UPDATE, so the database decides who
 # gets the last unit when two checkouts arrive at the same moment.
 def try_reserve(product_id: int, quantity: int) -> bool:
+    """Hold units in one conditional UPDATE; False if there is not enough stock."""
     result = db.session.execute(
         update(InventoryItem)
         .where(InventoryItem.product_id == product_id,
@@ -84,6 +85,7 @@ def release_entry(entry: ReservationEntry) -> None:
 
 
 def release_order_holds(order: Order) -> None:
+    """Give back all of an order's held stock (skipped under the leak fault)."""
     if faults.reservation_leak_enabled():
         return
     for entry in held_entries(order.id):
