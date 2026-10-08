@@ -48,6 +48,6 @@ def test_metrics_count_requests_and_checkouts(client, customer, product, buy):
 
 
 def test_metrics_reserved_units_gauge(client, customer, product, buy):
-    """The gauge shows units held by unpaid orders."""
+    """Declined orders hold nothing, so the gauge stays at zero."""
     buy(customer(), {product(stock=5): 3}, payment_token="tok_declined")
-    assert "shoplite_stock_reserved_units 3" in client.get("/metrics").get_data(as_text=True)
+    assert "shoplite_stock_reserved_units 0" in client.get("/metrics").get_data(as_text=True)

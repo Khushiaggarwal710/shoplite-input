@@ -3,6 +3,12 @@
 All notable changes to ShopLite are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- Two checkouts at the same moment could both take the last unit. Holds are now taken in one conditional `UPDATE`.
+- A failed or timed-out payment now releases its stock hold at once, instead of after 15 minutes.
+
 ## [2.0.0] - 2026-09-15
 
 ### Added
