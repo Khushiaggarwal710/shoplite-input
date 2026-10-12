@@ -9,6 +9,9 @@ from shoplite.extensions import db
 from shoplite.models.user import User
 from shoplite.utils import clock
 
+REVIEW_PUBLISHED = "published"
+REVIEW_HIDDEN = "hidden"
+
 
 class Review(db.Model):
     """A customer's rating and comment on a product they bought."""
@@ -22,9 +25,13 @@ class Review(db.Model):
     rating: Mapped[int] = mapped_column(comment="1 to 5 stars.")
     title: Mapped[str] = mapped_column(String(120))
     body: Mapped[str] = mapped_column(Text, default="")
+    status: Mapped[str] = mapped_column(
+        String(12), default=REVIEW_PUBLISHED, comment="'published' or 'hidden' (by flags)."
+    )
     created_at: Mapped[datetime] = mapped_column(default=clock.utcnow)
 
     author: Mapped[User] = relationship()
+    flags: Mapped[list["ReviewFlag"]] = relationship(cascade="all, delete-orphan")
 
     def to_dict(self) -> dict:
         """JSON view of the review."""
@@ -36,3 +43,14 @@ class Review(db.Model):
             "author": self.author.name,
             "created_at": self.created_at.isoformat(),
         }
+
+
+class ReviewFlag(db.Model):
+    __tablename__ = "review_flags"
+    __table_args__ = (UniqueConstraint("review_id", "user_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    review_id: Mapped[int] = mapped_column(ForeignKey("reviews.id"), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    reason: Mapped[str] = mapped_column(String(40), comment="spam, abusive, off_topic or other.")
+    created_at: Mapped[datetime] = mapped_column(default=clock.utcnow)
