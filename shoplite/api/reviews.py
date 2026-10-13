@@ -2,7 +2,10 @@
 
 from flask import Blueprint, g, request
 
-from shoplite.api.helpers import json_body, login_required
+from shoplite.api.helpers import json_body, login_required, require_admin
+from shoplite.errors import NotFound
+from shoplite.extensions import db
+from shoplite.models import Review
 from shoplite.services import catalog, reviews
 from shoplite.utils.pagination import page_args, paginate
 from shoplite.utils.validation import get_int, get_str
@@ -32,3 +35,22 @@ def add_review(sku: str):
         body=get_str(body, "body", required=False, max_len=2000) or "",
     )
     return review.to_dict(), 201
+
+
+@reviews_bp.post("/reviews/<int:review_id>/flag")
+@login_required
+def flag_review(review_id: int):
+    review = db.session.get(Review, review_id)
+    if review is None:
+        raise NotFound("review not found", code="SL-REV-404")
+    reason = get_str(json_body(), "reason", max_len=40)
+    review = reviews.flag_review(review, g.current_user, reason)
+    return {"id": review.id, "status": review.status, "flags": len(review.flags)}
+
+
+@reviews_bp.get("/reviews/hidden")
+def list_hidden_reviews():
+    require_admin()
+    page, per_page = page_args(request.args)
+    return paginate(reviews.hidden_review_query(), page, per_page,
+                    lambda r: {**r.to_dict(), "flags": len(r.flags)})
