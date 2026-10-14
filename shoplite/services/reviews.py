@@ -74,5 +74,6 @@ def hidden_review_query() -> Select:
 # TODO(meera): score the text with the moderation model and hide reviews above 0.9.
 # Waiting on the vendor contract, so nothing calls this yet.
 def score_review_text(body: str) -> float:
-    """Moderation score for review text (not implemented yet)."""
+    """Not implemented yet: returns None. Course note: S3 deletes this docstring live,
+    so AutoDocs must spot the empty body itself."""
     ...
