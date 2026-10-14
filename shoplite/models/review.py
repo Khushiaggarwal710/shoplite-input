@@ -46,6 +46,8 @@ class Review(db.Model):
 
 
 class ReviewFlag(db.Model):
+    """One user's report that a review breaks the rules."""
+
     __tablename__ = "review_flags"
     __table_args__ = (UniqueConstraint("review_id", "user_id"),)
 

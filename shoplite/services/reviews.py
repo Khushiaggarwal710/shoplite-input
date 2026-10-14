@@ -51,6 +51,7 @@ def rating_summary(product: Product) -> dict:
 
 
 def flag_review(review: Review, user: User, reason: str) -> Review:
+    """Record a flag; the third flag hides the review."""
     if reason not in FLAG_REASONS:
         raise ValidationError(f"'reason' must be one of {', '.join(FLAG_REASONS)}",
                               details={"field": "reason"})
@@ -66,10 +67,12 @@ def flag_review(review: Review, user: User, reason: str) -> Review:
 
 
 def hidden_review_query() -> Select:
+    """Hidden reviews, oldest first."""
     return select(Review).where(Review.status == REVIEW_HIDDEN).order_by(Review.id)
 
 
 # TODO(meera): score the text with the moderation model and hide reviews above 0.9.
 # Waiting on the vendor contract, so nothing calls this yet.
 def score_review_text(body: str) -> float:
+    """Moderation score for review text (not implemented yet)."""
     ...

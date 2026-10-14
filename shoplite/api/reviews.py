@@ -40,6 +40,7 @@ def add_review(sku: str):
 @reviews_bp.post("/reviews/<int:review_id>/flag")
 @login_required
 def flag_review(review_id: int):
+    """Flag a review: {"reason": "spam"}."""
     review = db.session.get(Review, review_id)
     if review is None:
         raise NotFound("review not found", code="SL-REV-404")
@@ -50,6 +51,7 @@ def flag_review(review_id: int):
 
 @reviews_bp.get("/reviews/hidden")
 def list_hidden_reviews():
+    """List reviews hidden by flags (admins only)."""
     require_admin()
     page, per_page = page_args(request.args)
     return paginate(reviews.hidden_review_query(), page, per_page,
