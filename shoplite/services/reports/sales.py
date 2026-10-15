@@ -1,4 +1,4 @@
-"""Admin sales and stock reports in SQL, using bound parameters (:name), never string formatting."""
+"""Sales reports in SQL, using bound parameters (:name), never string formatting."""
 
 from datetime import datetime
 
@@ -31,15 +31,6 @@ TOP_PRODUCTS_SQL = text("""
     LIMIT :limit
 """).bindparams(bindparam("start", type_=DateTime), bindparam("end", type_=DateTime))
 
-LOW_STOCK_SQL = text("""
-    SELECT p.sku, p.name, i.on_hand, i.reserved, i.on_hand - i.reserved AS sellable
-    FROM inventory_items AS i
-    JOIN products AS p ON p.id = i.product_id
-    WHERE p.is_active = 1 AND i.on_hand - i.reserved <= :threshold
-    ORDER BY sellable, p.sku
-""")
-
-
 def sales_summary(start: datetime, end: datetime) -> dict:
     """Orders, revenue, discounts and average order value between two dates."""
     faults.maybe_slow_query()
@@ -53,10 +44,3 @@ def top_products(start: datetime, end: datetime, limit: int) -> list[dict]:
     faults.maybe_slow_query()
     rows = db.session.execute(TOP_PRODUCTS_SQL, {"start": start, "end": end, "limit": limit})
     return [dict(row) for row in rows.mappings()]
-
-
-def low_stock(threshold: int) -> list[dict]:
-    """Active products with sellable stock at or below the threshold."""
-    faults.maybe_slow_query()
-    return [dict(row) for row in db.session.execute(LOW_STOCK_SQL, {"threshold": threshold})
-            .mappings()]
