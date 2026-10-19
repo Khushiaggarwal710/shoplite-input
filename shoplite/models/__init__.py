@@ -3,6 +3,7 @@
 from shoplite.models.cart import Cart, CartCoupon, CartItem
 from shoplite.models.category import Category
 from shoplite.models.coupon import Coupon, CouponRedemption
+from shoplite.models.gift_card import GiftCard
 from shoplite.models.inventory import InventoryItem, ReservationEntry
 from shoplite.models.order import Order, OrderItem
 from shoplite.models.payment import Payment
@@ -19,6 +20,7 @@ __all__ = [
     "Category",
     "Coupon",
     "CouponRedemption",
+    "GiftCard",
     "InventoryItem",
     "Order",
     "OrderItem",

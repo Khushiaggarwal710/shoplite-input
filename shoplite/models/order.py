@@ -35,6 +35,10 @@ class Order(db.Model):
     total_paise: Mapped[int] = mapped_column(
         comment="Amount charged: subtotal - discount + shipping."
     )
+    gift_card_id: Mapped[int | None] = mapped_column(ForeignKey("gift_cards.id"))
+    gift_card_paise: Mapped[int] = mapped_column(
+        default=0, comment="Part of the total paid from a gift card; the rest goes to the card."
+    )
     shipping_pincode: Mapped[str | None] = mapped_column(
         String(6), comment="6-digit Indian postal code of the delivery address."
     )
@@ -62,6 +66,7 @@ class Order(db.Model):
             "discount_paise": self.discount_paise,
             "shipping_paise": self.shipping_paise,
             "total_paise": self.total_paise,
+            "gift_card_paise": self.gift_card_paise,
             "shipping_pincode": self.shipping_pincode,
             "created_at": self.created_at.isoformat(),
             "items": [item.to_dict() for item in self.items],
