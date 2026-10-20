@@ -7,6 +7,7 @@ from shoplite.api.auth import auth_bp
 from shoplite.api.cart import cart_bp
 from shoplite.api.catalog import catalog_bp
 from shoplite.api.coupons import coupons_bp
+from shoplite.api.gift_cards import gift_cards_bp
 from shoplite.api.ops import ops_bp
 from shoplite.api.orders import orders_bp
 from shoplite.api.payments import payments_bp
@@ -21,6 +22,7 @@ BLUEPRINTS = [
     payments_bp,
     coupons_bp,
     reviews_bp,
+    gift_cards_bp,
     admin_bp,
     reports_bp,
     ops_bp,

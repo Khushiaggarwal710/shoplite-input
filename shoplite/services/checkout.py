@@ -10,7 +10,7 @@ from shoplite.models.order import STATUS_PAID, STATUS_PAYMENT_FAILED
 from shoplite.models.payment import PAYMENT_DECLINED, PAYMENT_ERROR, PAYMENT_SUCCEEDED
 from shoplite.payments import gateway
 from shoplite.services import cart as cart_service
-from shoplite.services import coupons, shipping, stock
+from shoplite.services import coupons, gift_cards, shipping, stock
 from shoplite.services.pricing import PriceQuote, quote_cart
 from shoplite.utils import clock
 
@@ -33,16 +33,19 @@ def create_order(user: User, cart: Cart, shipping_pincode: str) -> tuple[Order, 
 def record_failed_payment(order: Order, status: str, error_code: str, outcome: str) -> None:
     """Mark the order failed and save the payment attempt."""
     order.status = STATUS_PAYMENT_FAILED
-    db.session.add(Payment(order_id=order.id, amount_paise=order.total_paise,
+    amount = order.total_paise - order.gift_card_paise
+    db.session.add(Payment(order_id=order.id, amount_paise=amount,
                            status=status, error_code=error_code))
     db.session.commit()
     observability.count("shoplite_payments_total", status=status)
     observability.count("shoplite_checkouts_total", outcome=outcome)
 
 
-def checkout(user: User, payment_token: str, shipping_pincode: str) -> Order:
+def checkout(user: User, payment_token: str, shipping_pincode: str,
+             gift_card_code: str | None = None) -> Order:
     """Hold stock, create the order, charge the card, then commit the stock."""
     shipping.validate_pincode(shipping_pincode)
+    card = gift_cards.usable_card(gift_card_code) if gift_card_code else None
     cart = cart_service.get_cart(user)
     if not cart.items:
         raise ValidationError("your cart is empty", code="SL-CART-422")
@@ -60,13 +63,21 @@ def checkout(user: User, payment_token: str, shipping_pincode: str) -> Order:
         db.session.rollback()
         observability.count("shoplite_checkouts_total", outcome="out_of_stock")
         raise
+    if card:
+        order.gift_card_id = card.id
+        order.gift_card_paise = gift_cards.amount_covered(card, order.total_paise)
     db.session.commit()
+    amount_to_charge = order.total_paise - order.gift_card_paise
 
     # Failed payments keep their holds until they expire (see stock.RESERVATION_TTL).
     try:
-        if faults.gateway_should_fail():
+        if amount_to_charge == 0:  # the gift card covers everything
+            result = gateway.ChargeResult(succeeded=True)
+        elif faults.gateway_should_fail():
             raise gateway.GatewayUnavailable("fault switch: gateway errors")
-        result = gateway.charge(order.total_paise, payment_token, idempotency_key=order.number)
+        else:
+            result = gateway.charge(amount_to_charge, payment_token,
+                                    idempotency_key=order.number)
     except gateway.GatewayUnavailable as exc:
         current_app.logger.warning("payment gateway unavailable for order %s: %s",
                                    order.number, exc)
@@ -78,8 +89,10 @@ def checkout(user: User, payment_token: str, shipping_pincode: str) -> Order:
         record_failed_payment(order, PAYMENT_DECLINED, result.error_code, "declined")
         raise PaymentDeclined("payment was declined", details={"order_id": order.id})
 
-    db.session.add(Payment(order_id=order.id, amount_paise=order.total_paise,
+    db.session.add(Payment(order_id=order.id, amount_paise=amount_to_charge,
                            status=PAYMENT_SUCCEEDED, gateway_ref=result.gateway_ref))
+    if card:
+        card.balance_paise -= order.gift_card_paise
     stock.commit_reservations(order)
     coupons.record_redemptions(order, quote.discounts)
     order.status = STATUS_PAID

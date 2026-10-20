@@ -20,7 +20,8 @@ def place_order():
     """Check out the cart: {"payment_token": "tok_success", "shipping_pincode": "560001"}."""
     body = json_body()
     order = checkout(g.current_user, get_str(body, "payment_token"),
-                     get_str(body, "shipping_pincode", max_len=6))
+                     get_str(body, "shipping_pincode", max_len=6),
+                     gift_card_code=get_str(body, "gift_card_code", required=False, max_len=20))
     return order.to_dict(), 201
 
 
