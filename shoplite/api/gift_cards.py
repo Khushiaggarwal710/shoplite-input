@@ -15,6 +15,7 @@ gift_cards_bp = Blueprint("gift_cards", __name__, url_prefix="/gift-cards")
 
 @gift_cards_bp.post("")
 def issue():
+    """Issue a gift card (admins only): {"amount": "500.00"}."""
     require_admin()
     body = json_body()
     try:
@@ -29,4 +30,5 @@ def issue():
 @gift_cards_bp.get("/<code>")
 @login_required
 def balance(code: str):
+    """Show a gift card's balance."""
     return gift_cards.get_gift_card(code).to_dict()

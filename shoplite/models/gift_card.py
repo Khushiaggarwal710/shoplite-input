@@ -10,6 +10,8 @@ from shoplite.utils import clock
 
 
 class GiftCard(db.Model):
+    """A prepaid card customers spend at checkout."""
+
     __tablename__ = "gift_cards"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -21,6 +23,7 @@ class GiftCard(db.Model):
     created_at: Mapped[datetime] = mapped_column(default=clock.utcnow)
 
     def to_dict(self) -> dict:
+        """JSON view of the gift card."""
         return {
             "code": self.code,
             "initial_paise": self.initial_paise,
