@@ -3,6 +3,11 @@
 All notable changes to ShopLite are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Gift cards: admins issue them (`POST /gift-cards`), and checkout accepts an optional `gift_card_code`. The card pays first; any remainder is charged to the payment card. Refunds return the gift-card part to the card.
+
 ## [2.0.0] - 2026-09-15
 
 ### Added

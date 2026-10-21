@@ -12,7 +12,7 @@ def test_upgrade_builds_every_table(migrated_db):
         tables = {row[0] for row in rows}
         version = conn.execute("SELECT version_num FROM alembic_version").fetchone()[0]
     assert {"orders", "coupon_redemption_log", "inv_reservation_ledger", "reviews"} <= tables
-    assert version == "0003"
+    assert version == "0004"
 
 
 def test_read_only_connection_rejects_writes(migrated_db):
