@@ -8,9 +8,21 @@ from shoplite.models import Order, Shipment
 from shoplite.models.order import STATUS_PAID, STATUS_SHIPPED
 from shoplite.notifications.email import send_email
 
-FLAT_RATE_PAISE = 4_900  # ₹49
+FLAT_RATE_PAISE = 4_900  # ₹49, quoted before the customer gives a pincode
 FREE_SHIPPING_FROM_PAISE = 99_900  # free on ₹999 and above, after discounts
 PINCODE_PATTERN = re.compile(r"[1-9][0-9]{5}")
+
+# The first digit of a PIN code is its India Post region. The warehouse is in
+# Bengaluru (region 5), so the south ships cheapest.
+ZONE_BY_FIRST_DIGIT = {
+    "1": "north", "2": "north", "3": "west", "4": "west",
+    "5": "south", "6": "south", "7": "east", "8": "east", "9": "army_postal",
+}
+NORTHEAST_PREFIXES = ("78", "79")
+ZONE_RATES_PAISE = {
+    "south": 3_900, "north": 5_900, "west": 5_900, "east": 6_900,
+    "northeast": 9_900, "army_postal": 9_900,
+}
 
 
 def validate_pincode(pincode: str) -> str:
@@ -21,11 +33,19 @@ def validate_pincode(pincode: str) -> str:
     return pincode
 
 
-def shipping_rate_for(amount_paise: int, pincode: str) -> int:
+def zone_for_pincode(pincode: str) -> str:
+    if pincode.startswith(NORTHEAST_PREFIXES):
+        return "northeast"
+    return ZONE_BY_FIRST_DIGIT[pincode[0]]
+
+
+def shipping_rate_for(amount_paise: int, pincode: str | None) -> int:
     """Shipping charge for an order of this value (same rate for every pincode)."""
     if amount_paise >= FREE_SHIPPING_FROM_PAISE:
         return 0
-    return FLAT_RATE_PAISE
+    if pincode is None:
+        return FLAT_RATE_PAISE
+    return ZONE_RATES_PAISE[zone_for_pincode(pincode)]
 
 
 def ship_order(order: Order, carrier: str) -> Shipment:
