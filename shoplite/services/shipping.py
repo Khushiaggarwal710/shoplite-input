@@ -34,6 +34,7 @@ def validate_pincode(pincode: str) -> str:
 
 
 def zone_for_pincode(pincode: str) -> str:
+    """Shipping zone for a PIN code (north-east prefixes first, then the first digit)."""
     if pincode.startswith(NORTHEAST_PREFIXES):
         return "northeast"
     return ZONE_BY_FIRST_DIGIT[pincode[0]]
