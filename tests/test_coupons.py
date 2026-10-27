@@ -8,7 +8,7 @@ def test_percent_coupon_discounts_order(client, customer, product, coupon, buy):
     code = coupon("TENOFF", value=10)
     order = buy(customer(), {product(price="500.00"): 2}, coupon=code).get_json()
     assert order["discount_paise"] == 10000
-    assert order["total_paise"] == 100000 - 10000 + 4900
+    assert order["total_paise"] == 100000 - 10000 + 3900
 
 
 def test_flat_coupon_never_exceeds_subtotal(client, customer, product, coupon):

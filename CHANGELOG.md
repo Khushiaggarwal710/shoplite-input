@@ -3,6 +3,11 @@
 All notable changes to ShopLite are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Shipping is priced by zone from the PIN code's first digit: south ₹39, north and west ₹59, east ₹69, northeast and Army Postal Service ₹99. Orders of ₹999 or more still ship free. The cart shows ₹49 until a pincode is given at checkout.
+
 ## [2.0.0] - 2026-09-15
 
 ### Added

@@ -16,7 +16,7 @@ def test_checkout_success(client, customer, product, buy, admin_headers):
     assert response.status_code == 201
     order = response.get_json()
     assert order["status"] == "paid"
-    assert order["total_paise"] == 50000 + 4900  # flat shipping under ₹999
+    assert order["total_paise"] == 50000 + 3900  # south-zone shipping under ₹999
     assert order["number"].startswith("SL-")
     assert client.get("/cart", headers=headers).get_json()["items"] == []
     assert stock_of(client, admin_headers, sku) == 3

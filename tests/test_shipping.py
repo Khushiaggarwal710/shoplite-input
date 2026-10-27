@@ -1,4 +1,6 @@
-"""Shipping orders."""
+"""Shipping charges and shipping orders."""
+
+import pytest
 
 from shoplite.notifications.email import outbox
 
@@ -30,3 +32,38 @@ def test_ship_unknown_order_is_404(client, admin_headers):
     """Unknown order IDs are 404."""
     response = client.post("/admin/orders/999/ship", headers=admin_headers, json={"carrier": "X"})
     assert response.status_code == 404
+
+
+@pytest.mark.parametrize("pincode, rate", [
+    ("560001", 3900),  # Bengaluru, south
+    ("110001", 5900),  # Delhi, north
+    ("400001", 5900),  # Mumbai, west
+    ("700001", 6900),  # Kolkata, east
+    ("781001", 9900),  # Guwahati, northeast
+    ("795001", 9900),  # Imphal, northeast
+    ("900001", 9900),  # Army Postal Service
+])
+def test_rate_depends_on_zone(client, customer, product, pincode, rate):
+    """Orders under ₹999 pay the zone rate for their PIN code."""
+    headers, sku = customer(), product(price="100.00")
+    client.post("/cart/items", headers=headers, json={"sku": sku, "quantity": 1})
+    order = client.post("/orders", headers=headers,
+                        json={"payment_token": "tok_success", "shipping_pincode": pincode})
+    assert order.get_json()["shipping_paise"] == rate
+
+
+def test_free_shipping_applies_in_every_zone(client, customer, product):
+    """₹999 and above ships free, even to the northeast."""
+    headers, sku = customer(), product(price="999.00")
+    client.post("/cart/items", headers=headers, json={"sku": sku, "quantity": 1})
+    order = client.post("/orders", headers=headers,
+                        json={"payment_token": "tok_success", "shipping_pincode": "795001"})
+    assert order.get_json()["shipping_paise"] == 0
+
+
+def test_cart_quotes_standard_rate_before_pincode(client, customer, product):
+    """The cart has no address yet, so it shows the ₹49 standard rate."""
+    headers = customer()
+    cart = client.post("/cart/items", headers=headers,
+                       json={"sku": product(price="100.00"), "quantity": 1}).get_json()
+    assert cart["shipping_paise"] == 4900
